@@ -20,6 +20,11 @@ def roll_dice(num_rolls, dice=six_sided):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    reslist = [dice() for i in range(num_rolls)]
+    if 1 in reslist:
+        return 1
+    else:
+        return sum(reslist)
     # END PROBLEM 1
 
 
@@ -30,6 +35,7 @@ def picky_piggy(opponent_score):
     """
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    return 2 * abs(opponent_score % 10 - opponent_score // 10 % 10) + 1
     # END PROBLEM 2
 
 
@@ -43,6 +49,10 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     """
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    if num_rolls == 0:
+        return picky_piggy(opponent_score)
+    else:
+        return roll_dice(num_rolls,dice)
     # END PROBLEM 3
 
 
@@ -61,6 +71,10 @@ def swine_swap(score):
     """
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    if floor(sqrt(score)) ** 2 == score:
+        return True
+    else:
+        return False
     # END PROBLEM 4
 
 
@@ -86,6 +100,13 @@ def play(strategy0, strategy1,
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    while score0 < goal and score1 < goal:
+        score0 += take_turn(strategy0(score0,score1),score1,dice)
+        if swine_swap(score0):
+            score0,score1 = score1,score0
+        score1 += take_turn(strategy1(score1,score0),score0,dice)
+        if swine_swap(score1):
+            score0,score1 = score1,score0
     # END PROBLEM 5
     return score0, score1
 
@@ -117,6 +138,7 @@ def always_roll(n):
     assert n >= 0 and n <= 10
     # BEGIN PROBLEM 6
     "*** YOUR CODE HERE ***"
+    return lambda score,opponent_score: n
     # END PROBLEM 6
 
 
@@ -147,6 +169,16 @@ def is_always_roll(strategy, goal=GOAL_SCORE):
     """
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    i,j = 0,0
+    res = strategy(0,0)
+    while i < 100:
+        while j < 100:
+            if strategy(i,j) != res:
+                return False
+            j += 1
+        i += 1
+    return True
+
     # END PROBLEM 7
 
 
@@ -163,6 +195,9 @@ def make_averaged(original_function, trials_count=1000):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    def f(*args):
+        return sum([original_function(*args) for i in range(trials_count)]) / trials_count
+    return f
     # END PROBLEM 8
 
 
@@ -177,6 +212,11 @@ def max_scoring_num_rolls(dice=six_sided, total_samples=1000):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    test = make_averaged(roll_dice,total_samples)
+    res = [test(i,dice) for i in range(10)]
+    for i in range(10):
+        if res[i] == min(res):
+            return i
     # END PROBLEM 9
 
 
@@ -221,7 +261,11 @@ def picky_strategy(score, opponent_score, threshold=8, num_rolls=6):
     and returns NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    assert False, "*** YOUR CODE HERE ***"
+    # assert False, "*** YOUR CODE HERE ***"
+    if picky_piggy(opponent_score) >= threshold:
+        return 0
+    else:
+        return num_rolls
     # END PROBLEM 10
 
 
@@ -230,17 +274,29 @@ def swine_strategy(score, opponent_score, threshold=8, num_rolls=6):
     THRESHOLD points in this turn. Otherwise, it returns NUM_ROLLS.
     """
     # BEGIN PROBLEM 11
-    assert False, "*** YOUR CODE HERE ***"
+    # assert False, "*** YOUR CODE HERE ***"
+    if swine_swap(score + picky_piggy(opponent_score)):
+        if opponent_score - score >= threshold:
+            return 0
+        else:
+            return num_rolls
+    elif picky_piggy(opponent_score) >= threshold:
+        return 0
+    else:
+        return num_rolls
     # END PROBLEM 11
 
 
-def final_strategy(score, opponent_score):
+def final_strategy(score, opponent_score,threshold=10):
     """Write a brief description of your final strategy.
-
+    
     *** YOUR DESCRIPTION HERE ***
+    先计算距离胜利目标还差多少分,若低于某阈值则选择更小的投掷数量(降低风险)
+    (注:也可以设置多档阈值,我这里就偷懒了),若高于则采用考虑掷0和交换规则的策略
     """
     # BEGIN PROBLEM 12
-    return 6  # Remove this line once implemented.
+    # return 6  # Remove this line once implemented.
+    return 4 if GOAL_SCORE - score < threshold else swine_strategy(score,opponent_score)
     # END PROBLEM 12
 
 
