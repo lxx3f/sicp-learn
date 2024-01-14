@@ -19,11 +19,22 @@ def build_successors_table(tokens):
     prev = '.'
     for word in tokens:
         if prev not in table:
-            "*** YOUR CODE HERE ***"
-        "*** YOUR CODE HERE ***"
+            table[prev] = [word]
+        else:
+            table[prev] += [word]  
         prev = word
     return table
 
+text = ['We', 'came', 'to', 'investigate', ',', 'catch', 'bad', 'guys', 'and', 'to', 'eat', 'pie', '.']
+table = build_successors_table(text)
+print(sorted(table))
+# [',', '.', 'We', 'and', 'bad', 'came', 'catch', 'eat', 'guys', 'investigate', 'pie', 'to']
+print(table['to'])
+# ['investigate', 'eat']
+print(table['pie'])
+# ['.']
+print(table['.'])
+# ['We']
 
 def construct_sent(word, table):
     """Prints a random sentence starting with word, sampling from
@@ -38,9 +49,13 @@ def construct_sent(word, table):
     import random
     result = ''
     while word not in ['.', '!', '?']:
-        "*** YOUR CODE HERE ***"
+        result = result + ' ' + word
+        word = random.choice(table[word])
     return result.strip() + word
 
+table = {'Wow': ['!'], 'Sentences': ['are'], 'are': ['cool'], 'cool': ['.']}
+print(construct_sent('Wow', table))
+print(construct_sent('Sentences', table))
 
 def shakespeare_tokens(url='http:///www.composingprograms.com/shakespeare.txt'):
     """Return the words of Shakespeare's plays as a list."""
